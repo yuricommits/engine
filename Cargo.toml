@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    'calculus',
+    'kinematics',
+]
+
+[workspace.package]
+version = '0.1.0'
+authors = ['Yuri <238345062+yuricommits@users.noreply.github.com>']
+edition = '2024'
+license = 'GPL-3.0-only'

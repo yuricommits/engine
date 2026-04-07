@@ -1,0 +1,11 @@
+# --- Rust / Cargo ---
+/target
+Cargo.lock
+
+# --- System & Editor ---
+.zed/
+.DS_Store
+
+# Transcripts & Changelogs
+/notes
+/changelogs
