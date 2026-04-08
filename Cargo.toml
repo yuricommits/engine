@@ -1,7 +1,7 @@
 [workspace]
 members = [
     'calculus',
-    'kinematics',
+    'mechanics',
 ]
 resolver = '3'
 
