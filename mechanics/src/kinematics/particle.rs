@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Yuri
 // Licensed under GPL-3.0
 
-use calculus::differential::derivatives::derivative;
+use calculus::differential::derivatives::{derivative, second_derivative};
 
 /// Represents a point-mass particle moving in a one-dimensional Cartesian coordinate system.
 pub struct Particle1d<F>
@@ -41,6 +41,14 @@ where
     pub fn velocity_at(&self, t: f64) -> f64 {
         derivative(&self.x, t)
     }
+
+    /// Calculates the instantaneous acceleration $a(t) = \frac{dv}{dt}$.
+    ///
+    /// This uses the central difference formula.
+    /// $$a(t) = \lim_{h \to 0} \frac{x(t+h) - 2x(t) + x(t-h)}{h^2}$$
+    pub fn acceleration_at(&self, t: f64) -> f64 {
+        second_derivative(&self.x, t)
+    }
 }
 
 #[cfg(test)]
@@ -62,5 +70,16 @@ mod tests {
         assert_eq!(p.average_velocity(0.0, 2.0), 10.0);
         // Instantaneous velocity of 10t + 5 is 10
         assert!((p.velocity_at(1.0) - 10.0).abs() < 1e-8)
+    }
+
+    #[test]
+    fn test_quadratic_motion() {
+        // x(t) = 5t^2
+        let p = Particle1d::new(|t| 5.0 * t.powi(2));
+
+        // At t = 2.0: x = 20, v = 20, a = 10
+        assert_eq!(p.position_at(2.0), 20.0);
+        assert!((p.velocity_at(2.0) - 20.0).abs() < 1e-8);
+        assert!((p.acceleration_at(2.0) - 10.0).abs() < 1e-6);
     }
 }

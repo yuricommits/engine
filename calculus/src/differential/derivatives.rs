@@ -5,6 +5,9 @@
 /// Calculated as sqrt(f64::EPSILON) = 1.49011611938476562500e-8
 const H: f64 = 1.49011611938476562500e-8;
 
+/// Optimal step size for second-order numerical differentiation in f64.
+const H_SECOND: f64 = 6.0e-6;
+
 /// Numerical first-order derivative using the symmetric difference quotient.
 ///
 /// $$f'(x) \approx \frac{f(x + h) - f(x - h)}{2h}$$
@@ -17,6 +20,16 @@ where
     F: Fn(f64) -> f64,
 {
     (f(x + H) - f(x - H)) / (2.0 * H)
+}
+
+/// Calculates the second derivative f''(x) using the 3-point central difference.
+///
+/// $$f''(x) \approx \frac{f(x+h) - 2f(x) + f(x-h)}{h^2}$$
+pub fn second_derivative<F>(f: F, x: f64) -> f64
+where
+    F: Fn(f64) -> f64,
+{
+    (f(x + H_SECOND) - 2.0 * f(x) + f(x - H_SECOND)) / (H_SECOND * H_SECOND)
 }
 
 #[cfg(test)]

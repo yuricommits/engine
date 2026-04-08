@@ -16,9 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [mechanics] : Methods for position, displacement, and average velocity.
 - [mechanics] : Instantaneous `velocity_at` via `calculus` integration.
 - [mechanics] : Safety-validated `NaN` handling for zero-time intervals.
+- [calculus] : Second-order numerical differentiation using the 3-point central difference formula.
+- [calculus] : Optimized `H_SECOND` ($\approx 6.0e-6$) for stable acceleration calculations.
+- [mechanics] : `acceleration_at` implementation for `Particle1d`
 
 ### Changed
 - [calculus] : Verified precision using Relative Error ($\epsilon_{rel} < 10^{-10}$) rather than absolute tolerance.
+- [mechanics] : Optimized acceleration calculation to reference the position function directly, preventing compound numerical noise.
 
 ### Fixed
 - [workspace] : Updated `Cargo.toml` to `resolver = "3"` for Edition 2024.
