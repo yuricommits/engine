@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [calculus] : `nth_derivative` implementation using Const Generics to support arbitary order differentiation at compile-time.
 - [calculus] : Automatic binomial coefficient generation via `const fn combinations` for stencil weight calculation.
 - [calculus] : Dynamic relative step-size scaling to preserve precision across astronomical scales (from atomic to parsec ranges).
+- [mechanics] : `kinematic_order_at<const N>` allowing zero-overhead analysis of Jerk, Snap, and higher-order motion.
 
 ### Changed
 - [calculus] : Verified precision using Relative Error ($\epsilon_{rel} < 10^{-10}$) rather than absolute tolerance.

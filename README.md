@@ -10,7 +10,7 @@ A high-performance strictly typed computational engine for classical mechanics a
 The workspace is organized into discrete domains to ensure mathematical rigor and physical consistency:
 
 ### `Calculus` (Numerical Analysis)
-The analytical engine of the library. It provides high-precision numerical operations (differentiation, integration and root-finding) optimized for IEEE 754 double-precision floating point math. Built to minimize truncation and round-off errors in high-throughput simulations.
+The analytical engine of the library. It provides arbitrary-order numerical differentiation using compile-time specialized stencils and scale-invariant step sizes. Optimized for IEEE 754 double-precision math, the module is engineered to preserve precision across astronomical scales by minimizing the interplay between truncation and round-off errors.    
 
 ### `Mechanics` (Physical Systems)
 The application layer mapping mathematical abstractions to physical observables. This module handles the kinematics and dynamics of point-mass rigid bodies, providing a functional interface for position-based motion, force-vector summation, and orbital trajectories.

@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Yuri
 // Licensed under GPL-3.0
 
-use calculus::differential::derivatives::{derivative, second_derivative};
+use calculus::differential::derivatives::{derivative, nth_derivative, second_derivative};
 
 /// Represents a point-mass particle moving in a one-dimensional Cartesian coordinate system.
 pub struct Particle1d<F>
@@ -22,32 +22,45 @@ where
     }
 
     /// Returns the position coordinate at a specific instant in time $t$.
+    #[inline(always)]
     pub fn position_at(&self, t: f64) -> f64 {
         (self.x)(t)
     }
 
     /// Calculates the displacement vector component: $\Delta x = x(t_2) - x(t_1)$.
+    #[inline(always)]
     pub fn displacement(&self, t1: f64, t2: f64) -> f64 {
         self.position_at(t2) - self.position_at(t1)
     }
 
     /// Calculates the average velocity component: $\bar{v} = \frac{\Delta x}{\Delta t}$.
-    /// Returns `NaN` if &t_1 = t_2&
+    /// Returns `NaN` if &t_1 = t_2& due to division by zero.
+    #[inline(always)]
     pub fn average_velocity(&self, t1: f64, t2: f64) -> f64 {
         self.displacement(t1, t2) / (t2 - t1)
     }
 
     /// Calculates the instantaneous velocity $v(t) = \frac{dx}{dt}$.
+    #[inline(always)]
     pub fn velocity_at(&self, t: f64) -> f64 {
         derivative(&self.x, t)
     }
 
     /// Calculates the instantaneous acceleration $a(t) = \frac{dv}{dt}$.
-    ///
-    /// This uses the central difference formula.
-    /// $$a(t) = \lim_{h \to 0} \frac{x(t+h) - 2x(t) + x(t-h)}{h^2}$$
+    #[inline(always)]
     pub fn acceleration_at(&self, t: f64) -> f64 {
         second_derivative(&self.x, t)
+    }
+
+    /// Calculates the arbitrary kinematic order at time $t$.
+    ///
+    /// * N=3: Jerk ($j$)
+    /// * N=4: Snap ($s$)
+    ///
+    /// This utilizes the zero-overhead const-generic stencils.
+    #[inline(always)]
+    pub fn kinematic_order_at<const N: usize>(&self, t: f64) -> f64 {
+        nth_derivative::<_, N>(&self.x, t)
     }
 }
 
@@ -58,7 +71,6 @@ mod tests {
     #[test]
     fn test_nan_on_zero_interval() {
         let p = Particle1d::new(|t| 5.0 * t);
-        // Average velocity at a single point should be NaN (0/0)
         assert!(p.average_velocity(2.0, 2.0).is_nan())
     }
 
@@ -68,18 +80,25 @@ mod tests {
         assert_eq!(p.position_at(0.0), 5.0);
         assert_eq!(p.displacement(0.0, 2.0), 20.0);
         assert_eq!(p.average_velocity(0.0, 2.0), 10.0);
-        // Instantaneous velocity of 10t + 5 is 10
         assert!((p.velocity_at(1.0) - 10.0).abs() < 1e-8)
     }
 
     #[test]
-    fn test_quadratic_motion() {
-        // x(t) = 5t^2
-        let p = Particle1d::new(|t| 5.0 * t.powi(2));
+    fn test_higher_order_kinematics() {
+        // x(t) = t^4 + t^3
+        // v(t) = 4t^3 + 3t^2 -> at t=2: 32 + 12 = 44
+        // a(t) = 12t^2 + 6t  -> at t=2: 48 + 12 = 60
+        // j(t) = 24t + 6     -> at t=2: 48 + 6 = 54
+        // s(t) = 24          -> at t=2: 24
 
-        // At t = 2.0: x = 20, v = 20, a = 10
-        assert_eq!(p.position_at(2.0), 20.0);
-        assert!((p.velocity_at(2.0) - 20.0).abs() < 1e-8);
-        assert!((p.acceleration_at(2.0) - 10.0).abs() < 1e-6);
+        let p = Particle1d::new(|t| t.powi(4) + t.powi(3));
+        let t = 2.0;
+
+        assert!((p.velocity_at(t) - 44.0).abs() < 1e-7);
+        assert!((p.acceleration_at(t) - 60.0).abs() < 1e-6);
+
+        // Testing Jerk (N=3) and Snap (N=4)
+        assert!((p.kinematic_order_at::<3>(t) - 54.0).abs() < 1e-5);
+        assert!((p.kinematic_order_at::<4>(t) - 24.0).abs() < 1e-4);
     }
 }
