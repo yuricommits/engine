@@ -18,11 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [mechanics] : Safety-validated `NaN` handling for zero-time intervals.
 - [calculus] : Second-order numerical differentiation using the 3-point central difference formula.
 - [calculus] : Optimized `H_SECOND` ($\approx 6.0e-6$) for stable acceleration calculations.
-- [mechanics] : `acceleration_at` implementation for `Particle1d`
+- [mechanics] : `acceleration_at` implementation for `Particle1d`.
+- [calculus] : `nth_derivative` implementation using Const Generics to support arbitary order differentiation at compile-time.
+- [calculus] : Automatic binomial coefficient generation via `const fn combinations` for stencil weight calculation.
+- [calculus] : Dynamic relative step-size scaling to preserve precision across astronomical scales (from atomic to parsec ranges).
 
 ### Changed
 - [calculus] : Verified precision using Relative Error ($\epsilon_{rel} < 10^{-10}$) rather than absolute tolerance.
 - [mechanics] : Optimized acceleration calculation to reference the position function directly, preventing compound numerical noise.
+- [calculus] : Replaced the hardcoded `H` and `H_SECOND` constants with a mathematically derived `optimal_h(n, x)` to minimize the sum of trucncation and rounding errors.
+- [calculus] : Refactored specialization logic using `match` on constant values to allow zero-cost compiler branching.
+- [calculus] : Upgraded test suite to include Scale Invariance and Transcendental verification for high-order stencils.
 
 ### Fixed
 - [workspace] : Updated `Cargo.toml` to `resolver = "3"` for Edition 2024.
