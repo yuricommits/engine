@@ -16,6 +16,16 @@ const fn combinations(n: usize, k: usize) -> f64 {
     res
 }
 
+/// Pascal's Triangle for N=0 through N=4.
+/// Used for zero-overhead coefficients in differentiation stencils.
+const PASCAL: [[f64; 5]; 5] = [
+    [1.0, 0.0, 0.0, 0.0, 0.0],
+    [1.0, 1.0, 0.0, 0.0, 0.0],
+    [1.0, 2.0, 1.0, 0.0, 0.0],
+    [1.0, 3.0, 3.0, 1.0, 0.0],
+    [1.0, 4.0, 6.0, 4.0, 1.0],
+];
+
 /// Optimal step size for N-th order central difference.
 #[inline(always)]
 fn optimal_h(n: usize, x: f64) -> f64 {
@@ -64,8 +74,13 @@ where
             let mut sum = 0.0;
             let half_n = N as f64 * 0.5;
 
+            #[allow(clippy::needless_range_loop)]
             for i in 0..=N {
-                let coeff = combinations(N, i);
+                let coeff = if N < 5 {
+                    PASCAL[N][i]
+                } else {
+                    combinations(N, i)
+                };
                 let sign = if i % 2 == 0 { 1.0 } else { -1.0 };
                 let point = x + (half_n - i as f64) * h;
                 sum += sign * coeff * f(point);
@@ -121,5 +136,39 @@ mod tests {
     fn zero_order() {
         let val = nth_derivative::<_, 0>(|x| x.exp(), 1.0);
         assert_eq!(val, 1.0f64.exp());
+    }
+
+    // VI. Test for Singularity
+    // Verifies behavior near a vertical asymptote (1/x at x -> 0).
+    // The derivative of 1/x is -1/x^2.
+    #[test]
+    fn test_singularity() {
+        let f = |x: f64| 1.0 / x;
+        let x_near_zero = 1e-4;
+
+        let d = nth_derivative::<_, 1>(f, x_near_zero);
+        let expected = -1.0 / (x_near_zero * x_near_zero);
+
+        let rel_error = (d - expected).abs() / expected.abs();
+        assert!(d.is_finite(), "Numerical overflow/NaN at x={}", x_near_zero);
+        assert!(
+            rel_error < 5e-3,
+            "Precision loss: rel_err={} exceeds limit 1e-5",
+            rel_error
+        );
+    }
+
+    // VII. Test for Non-Differentiable Points
+    // Validates behavior at f'(x) undefined (corner).
+    #[test]
+    fn test_corner_case() {
+        let f = |x: f64| x.abs();
+        let d = nth_derivative::<_, 1>(f, 0.0);
+
+        assert_eq!(
+            d,
+            0.0,
+            "Stencil asymmetry: expected 0.0 for symmetric corner, get {}", d
+        );
     }
 }
